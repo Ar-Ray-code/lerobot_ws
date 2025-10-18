@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- feetech_ros2_driver hardware interface for real servos -->
+  <xacro:arg name="usb_port" default="/dev/ttyACM0" />
+  <!-- optional calibration offsets (servo ticks); default 0 -->
+  <xacro:arg name="offset_j1" default="0" />
+  <xacro:arg name="offset_j2" default="0" />
+  <xacro:arg name="offset_j3" default="0" />
+  <xacro:arg name="offset_j4" default="0" />
+  <xacro:arg name="offset_j5" default="0" />
+  <xacro:arg name="offset_j6" default="0" />
+
+  <ros2_control name="RobotSystem" type="system">
+    <hardware>
+      <plugin>feetech_ros2_driver/FeetechHardwareInterface</plugin>
+      <param name="usb_port">$(arg usb_port)</param>
+    </hardware>
+
+    <!-- Arm joints -->
+    <joint name="1">
+      <command_interface name="position">
+        <param name="min">-1.91986</param>
+        <param name="max">1.91986</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <param name="id">1</param>
+      <param name="offset">$(arg offset_j1)</param>
+    </joint>
+
+    <joint name="2">
+      <command_interface name="position">
+        <param name="min">-1.74533</param>
+        <param name="max">1.74533</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <param name="id">2</param>
+      <param name="offset">$(arg offset_j2)</param>
+    </joint>
+
+    <joint name="3">
+      <command_interface name="position">
+        <param name="min">-1.74533</param>
+        <param name="max">1.5708</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <param name="id">3</param>
+      <param name="offset">$(arg offset_j3)</param>
+    </joint>
+
+    <joint name="4">
+      <command_interface name="position">
+        <param name="min">-1.65806</param>
+        <param name="max">1.65806</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <param name="id">4</param>
+      <param name="offset">$(arg offset_j4)</param>
+    </joint>
+
+    <joint name="5">
+      <command_interface name="position">
+        <param name="min">-2.79253</param>
+        <param name="max">2.79253</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <param name="id">5</param>
+      <param name="offset">$(arg offset_j5)</param>
+    </joint>
+
+    <!-- Gripper joint -->
+    <joint name="6">
+      <command_interface name="position">
+        <param name="min">-0.174533</param>
+        <param name="max">1.74533</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <param name="id">6</param>
+      <param name="offset">$(arg offset_j6)</param>
+    </joint>
+  </ros2_control>
+
+</robot>

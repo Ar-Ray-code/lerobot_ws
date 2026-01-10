@@ -12,13 +12,12 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
 
     # Arguments
-    is_sim_arg = DeclareLaunchArgument("is_sim", default_value="True")
-    usb_port_arg = DeclareLaunchArgument("usb_port", default_value="/dev/ttyACM0")
+    usb_port_arg = DeclareLaunchArgument("usb_port", default_value="/dev/ttyACM1")
     calib_json_arg = DeclareLaunchArgument(
         "calib_json", default_value=os.path.join(
                     get_package_share_directory("lerobot_controller"),
                     "config",
-                    "example_calib.json",
+                    "leader_calib.json",
                 ),
     )
     auto_zero_arg = DeclareLaunchArgument("auto_zero_on_activate", default_value="false")
@@ -32,39 +31,6 @@ def generate_launch_description():
 
     def setup_nodes(context, *args, **kwargs):
         # Read args at runtime
-        is_sim_val = LaunchConfiguration("is_sim").perform(context)
-
-        # Simulation branch: only spawn controllers (Gazebo provides controller_manager)
-        if is_sim_val == "True":
-            joint_state_broadcaster_spawner = Node(
-                package="controller_manager",
-                executable="spawner",
-                arguments=[
-                    "joint_state_broadcaster",
-                    "--controller-manager",
-                    "/controller_manager",
-                ],
-            )
-
-            arm_controller_spawner = Node(
-                package="controller_manager",
-                executable="spawner",
-                arguments=["arm_controller", "--controller-manager", "/controller_manager"],
-            )
-
-            gripper_controller_spawner = Node(
-                package="controller_manager",
-                executable="spawner",
-                arguments=["gripper_controller", "--controller-manager", "/controller_manager"],
-            )
-
-            return [
-                joint_state_broadcaster_spawner,
-                arm_controller_spawner,
-                gripper_controller_spawner,
-            ]
-
-        # Hardware branch: build robot_description with feetech ros2_control + calibration
         usb_port_val = LaunchConfiguration("usb_port").perform(context)
         calib_path = LaunchConfiguration("calib_json").perform(context)
         auto_zero_val = LaunchConfiguration("auto_zero_on_activate").perform(context)
@@ -76,10 +42,10 @@ def generate_launch_description():
         home_j5 = LaunchConfiguration("home_j5_rad").perform(context)
         home_j6 = LaunchConfiguration("home_j6_rad").perform(context)
 
-        so101_hw_urdf = os.path.join(
+        so101_hw_leader_urdf = os.path.join(
             get_package_share_directory("lerobot_description"),
             "urdf",
-            "so101_hw.urdf.xacro",
+            "so101_hw_leader.urdf.xacro",
         )
 
         # default offsets (ticks) and ranges
@@ -150,7 +116,7 @@ def generate_launch_description():
             Command(
                 [
                     "xacro ",
-                    so101_hw_urdf,
+                    so101_hw_leader_urdf,
                     " usb_port:=",
                     usb_port_val,
                     " auto_zero_on_activate:=",
@@ -195,18 +161,20 @@ def generate_launch_description():
         robot_state_publisher_node = Node(
             package="robot_state_publisher",
             executable="robot_state_publisher",
+            namespace="leader",
             parameters=[{"robot_description": robot_description}],
         )
 
         controller_manager = Node(
             package="controller_manager",
             executable="ros2_control_node",
+            namespace="leader",
             parameters=[
                 {"robot_description": robot_description, "use_sim_time": False},
                 os.path.join(
                     get_package_share_directory("lerobot_controller"),
                     "config",
-                    "so101_controllers.yaml",
+                    "so101_leader_controllers.yaml",
                 ),
             ],
         )
@@ -217,33 +185,18 @@ def generate_launch_description():
             arguments=[
                 "joint_state_broadcaster",
                 "--controller-manager",
-                "/controller_manager",
+                "/leader/controller_manager",
             ],
-        )
-
-        arm_controller_spawner = Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["arm_controller", "--controller-manager", "/controller_manager"],
-        )
-
-        gripper_controller_spawner = Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["gripper_controller", "--controller-manager", "/controller_manager"],
         )
 
         return [
             robot_state_publisher_node,
             controller_manager,
             joint_state_broadcaster_spawner,
-            arm_controller_spawner,
-            gripper_controller_spawner,
         ]
 
     return LaunchDescription(
         [
-            is_sim_arg,
             usb_port_arg,
             calib_json_arg,
             auto_zero_arg,

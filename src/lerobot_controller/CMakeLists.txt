@@ -5,15 +5,44 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
+
+# Build joint_state_to_trajectory node
+add_executable(joint_state_to_trajectory
+  src/joint_state_to_trajectory.cpp
+)
+
+target_include_directories(joint_state_to_trajectory PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+ament_target_dependencies(joint_state_to_trajectory
+  rclcpp
+  sensor_msgs
+  trajectory_msgs
+)
+
+install(TARGETS joint_state_to_trajectory
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(
   DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  PROGRAMS scripts/joint_state_to_trajectory.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

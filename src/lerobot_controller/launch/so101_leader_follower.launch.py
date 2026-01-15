@@ -27,7 +27,7 @@ def generate_launch_description():
         "follower_calib_json", default_value=os.path.join(
                     get_package_share_directory("lerobot_controller"),
                     "config",
-                    "example_calib.json",
+                    "follower_calib.json",
                 ),
     )
 

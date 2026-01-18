@@ -209,7 +209,7 @@ def generate_launch_description():
                 os.path.join(
                     get_package_share_directory("lerobot_controller"),
                     "config",
-                    "so101_controllers.yaml",
+                    "so101_follower_controllers.yaml",
                 ),
             ],
         )

@@ -2,7 +2,7 @@ import os
 import json
 from pathlib import Path
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, TimerAction
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch.substitutions import LaunchConfiguration, Command
@@ -190,8 +190,8 @@ def generate_launch_description():
         )
 
         return [
-            robot_state_publisher_node,
             controller_manager,
+            TimerAction(period=2.0, actions=[robot_state_publisher_node]),
             joint_state_broadcaster_spawner,
         ]
 
